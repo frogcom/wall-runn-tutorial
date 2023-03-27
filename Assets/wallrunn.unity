@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 136629651}
   - component: {fileID: 136629650}
   - component: {fileID: 136629649}
-  m_Layer: 10
+  m_Layer: 9
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -150,8 +150,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 136629647}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 31.31, y: 3, z: 0}
-  m_LocalScale: {x: 0.5, y: 25, z: 40}
+  m_LocalPosition: {x: 31.31, y: 23.1, z: 0}
+  m_LocalScale: {x: 0.5, y: 50, z: 40}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1343809460}
@@ -511,7 +511,7 @@ GameObject:
   - component: {fileID: 511693534}
   - component: {fileID: 511693533}
   - component: {fileID: 511693532}
-  m_Layer: 10
+  m_Layer: 9
   m_Name: Cube (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -851,7 +851,7 @@ GameObject:
   - component: {fileID: 632285108}
   - component: {fileID: 632285107}
   - component: {fileID: 632285106}
-  m_Layer: 10
+  m_Layer: 9
   m_Name: Cube (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1479,6 +1479,7 @@ MonoBehaviour:
   sprintSpeed: 15
   slideSpeed: 18
   wallrunSpeed: 12
+  climbSpeed: 0
   speedIncreaseMultiplier: 3
   slopeIncreaseMultiplier: 3
   groundDrag: 3
@@ -1502,6 +1503,7 @@ MonoBehaviour:
   sliding: 0
   crouching: 0
   wallrunning: 0
+  climbing: 0
 --- !u!114 &1490553163
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1571,11 +1573,16 @@ MonoBehaviour:
   whatIsWall:
     serializedVersion: 2
     m_Bits: 512
-  climbSpeed: 0
-  maxClimbTime: 0
-  detectionLenght: 0
-  sphereCastRadius: 0
-  maxWallLookAngle: 0
+  climbSpeed: 5
+  maxClimbTime: 0.75
+  climbJumpUpForce: 14
+  climbbackForce: 12
+  JumpKey: 32
+  climbJumps: 1
+  detectionLenght: 0.7
+  sphereCastRadius: 0.25
+  maxWallLookAngle: 30
+  minWallNormalAngleChange: 5
 --- !u!1 &1928204717
 GameObject:
   m_ObjectHideFlags: 0
@@ -1723,7 +1730,7 @@ GameObject:
   - component: {fileID: 1993610672}
   - component: {fileID: 1993610671}
   - component: {fileID: 1993610670}
-  m_Layer: 10
+  m_Layer: 9
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1900,7 +1907,7 @@ Transform:
   m_GameObject: {fileID: 2110183912}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 10, y: 1, z: 10}
+  m_LocalScale: {x: 30, y: 1, z: 30}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1343809460}
