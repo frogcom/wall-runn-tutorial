@@ -48,7 +48,9 @@ public class PlayerMovementAdvanced : MonoBehaviour
     private bool exitingSlope;
 
     [Header("References")]
-    public Climbing climbingScript
+    public Climbing climbingScript;
+
+
 
     public Transform playerCam;
     public Transform orientation;
