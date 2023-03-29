@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerMovementAdvanced : MonoBehaviour
 {
     [Header("Movement")]
-    private float moveSpeed; 
+    private float moveSpeed;
     private float desiredMoveSpeed;
     private float lastDesiredMoveSpeed;
     public float walkSpeed;
@@ -66,6 +66,8 @@ public class PlayerMovementAdvanced : MonoBehaviour
     public MovementState state;
     public enum MovementState
     {
+        freeze,
+        unlimited,
         walking,
         sprinting,
         wallrunning,
@@ -79,6 +81,12 @@ public class PlayerMovementAdvanced : MonoBehaviour
     public bool crouching;
     public bool wallrunning;
     public bool climbing;
+    public bool vaulting;
+
+    public bool freeze;
+    public bool unlimited;
+
+    public bool restricted;
 
     private void Start()
     {
@@ -145,7 +153,19 @@ public class PlayerMovementAdvanced : MonoBehaviour
     private void StateHandler()
     {
         //mode - climbing 
-        if(climbing)
+
+        if (freeze)
+        {
+            state = MovementState.freeze;
+            rb.velocity = Vector3.zero;
+        }
+        else if (unlimited)
+        {
+            state = MovementState.unlimited;
+            moveSpeed = 999f;
+            return;
+        }
+        else if (climbing)
         {
             state = MovementState.climbing;
             desiredMoveSpeed = climbSpeed;
@@ -238,7 +258,8 @@ public class PlayerMovementAdvanced : MonoBehaviour
 
     private void MovePlayer()
     {
-        if (climbingScript.exitingWall) return;
+
+        if (restricted) return;
         // calculate movement direction
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
 
@@ -260,7 +281,7 @@ public class PlayerMovementAdvanced : MonoBehaviour
             rb.AddForce(moveDirection.normalized * moveSpeed * 10f * airMultiplier, ForceMode.Force);
 
         // turn gravity off while on slope
-        if(!wallrunning) rb.useGravity = !OnSlope();
+        if (!wallrunning) rb.useGravity = !OnSlope();
     }
 
     private void SpeedControl()

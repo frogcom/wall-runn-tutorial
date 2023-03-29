@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class WallRunning : MonoBehaviour
 {
-
     [Header("WallRunning")]
     public LayerMask whatIsWall;
     public LayerMask whatIsGround;
@@ -14,7 +13,6 @@ public class WallRunning : MonoBehaviour
     public float wallClimbSpeed;
     public float maxWallRunTime;
     private float wallRunTimer;
-
 
     [Header("Input")]
     public KeyCode jumpKey = KeyCode.Space;
@@ -41,8 +39,6 @@ public class WallRunning : MonoBehaviour
     [Header("Gravity")]
     public bool useGravity;
     public float gravityCounterForce;
-
-
 
     [Header("References")]
     public Transform orientation;

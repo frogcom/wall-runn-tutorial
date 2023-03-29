@@ -1577,7 +1577,7 @@ MonoBehaviour:
   sprintSpeed: 15
   slideSpeed: 18
   wallrunSpeed: 12
-  climbSpeed: 0
+  climbSpeed: 10
   speedIncreaseMultiplier: 3
   slopeIncreaseMultiplier: 3
   groundDrag: 3
@@ -1675,10 +1675,10 @@ MonoBehaviour:
   climbSpeed: 5
   maxClimbTime: 1
   climbJumpUpForce: 14
-  climbJumpBackForce: 0
+  climbJumpBackForce: 3
   jumpKey: 32
   climbJumps: 1
-  detectionLength: 0
+  detectionLength: 4
   sphereCastRadius: 0.45
   maxWallLookAngle: 30
   minWallNormalAngleChange: 5

@@ -20,9 +20,9 @@ public class Sliding : MonoBehaviour
 
     [Header("Input")]
     public KeyCode slideKey = KeyCode.LeftControl;
-
     private float horizontalInput;
     private float verticalInput;
+
 
     private void Start()
     {
@@ -52,13 +52,11 @@ public class Sliding : MonoBehaviour
 
     private void StartSlide()
     {
+        if (pm.wallrunning) return;
+
         pm.sliding = true;
 
-        playerObj.localScale = new Vector3(
-            playerObj.localScale.x,
-            slideYScale,
-            playerObj.localScale.z
-        );
+        playerObj.localScale = new Vector3(playerObj.localScale.x, slideYScale, playerObj.localScale.z);
         rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
 
         slideTimer = maxSlideTime;
@@ -66,8 +64,7 @@ public class Sliding : MonoBehaviour
 
     private void SlidingMovement()
     {
-        Vector3 inputDirection =
-            orientation.forward * verticalInput + orientation.right * horizontalInput;
+        Vector3 inputDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
 
         // sliding normal
         if (!pm.OnSlope() || rb.velocity.y > -0.1f)
@@ -76,6 +73,7 @@ public class Sliding : MonoBehaviour
 
             slideTimer -= Time.deltaTime;
         }
+
         // sliding down a slope
         else
         {
@@ -90,10 +88,6 @@ public class Sliding : MonoBehaviour
     {
         pm.sliding = false;
 
-        playerObj.localScale = new Vector3(
-            playerObj.localScale.x,
-            startYScale,
-            playerObj.localScale.z
-        );
+        playerObj.localScale = new Vector3(playerObj.localScale.x, startYScale, playerObj.localScale.z);
     }
 }
