@@ -8,6 +8,7 @@ public class Climbing : MonoBehaviour
     public Transform orientation;
     public Rigidbody rb;
     public PlayerMovementAdvanced pm;
+    public LedgeGrabbing lg;
     public LayerMask whatIsWall;
 
     [Header("Climbing")]
@@ -43,50 +44,82 @@ public class Climbing : MonoBehaviour
     public float exitWallTime;
     private float exitWallTimer;
 
+    // Start is called before the first frame update
+    private void Start()
+    {
+        lg = GetComponent<LedgeGrabbing>();
+    }
+
     // Update is called once per frame
     private void Update()
     {
         WallCheck();
         StateMachine();
 
-        if (climbing && !exitingWall) ClimbingMovement();
+        if (climbing && !exitingWall)
+            ClimbingMovement();
     }
 
     private void StateMachine()
     {
-        // State 1 - Climbing
-        if (wallFront && Input.GetKey(KeyCode.W) && wallLookAngle < maxWallLookAngle && !exitingWall)
+        // state 0 - ledge grabbing
+        if (lg.holding)
         {
-            if (!climbing && climbTimer > 0) StartClimbing();
+            if (climbing)
+                StopClimbing();
+        }
+        // State 1 - Climbing
+        else if (
+            wallFront && Input.GetKey(KeyCode.W) && wallLookAngle < maxWallLookAngle && !exitingWall
+        )
+        {
+            if (!climbing && climbTimer > 0)
+                StartClimbing();
 
             // timer
-            if (climbTimer > 0) climbTimer -= Time.deltaTime;
-            if (climbTimer < 0) StopClimbing();
+            if (climbTimer > 0)
+                climbTimer -= Time.deltaTime;
+            if (climbTimer < 0)
+                StopClimbing();
         }
-
         // State 2 - Exiting
         else if (exitingWall)
         {
-            if (climbing) StopClimbing();
+            if (climbing)
+                StopClimbing();
 
-            if (exitWallTimer > 0) exitWallTimer -= Time.deltaTime;
-            if (exitWallTimer < 0) exitingWall = false;
+            if (exitWallTimer > 0)
+                exitWallTimer -= Time.deltaTime;
+            if (exitWallTimer < 0)
+                exitingWall = false;
         }
-
         // State 3 - None
         else
         {
-            if (climbing) StopClimbing();
+            if (climbing)
+                StopClimbing();
         }
 
-        if (wallFront && Input.GetKeyDown(jumpKey) && climbJumpsLeft > 0) ClimbJump();
+        if (wallFront && Input.GetKeyDown(jumpKey) && climbJumpsLeft > 0)
+            ClimbJump();
     }
+
     private void WallCheck()
     {
-        wallFront = Physics.SphereCast(transform.position, sphereCastRadius, orientation.forward, out frontWallHit, detectionLength, whatIsWall);
+        wallFront = Physics.SphereCast(
+            transform.position,
+            sphereCastRadius,
+            orientation.forward,
+            out frontWallHit,
+            detectionLength,
+            whatIsWall
+        );
         wallLookAngle = Vector3.Angle(orientation.forward, -frontWallHit.normal);
 
-        bool newWall = frontWallHit.transform != lastWall || Mathf.Abs(Vector3.Angle(lastWallNormal, frontWallHit.normal)) > minWallNormalAngleChange;
+        bool newWall =
+            frontWallHit.transform != lastWall
+            || Mathf.Abs(Vector3.Angle(lastWallNormal, frontWallHit.normal))
+                > minWallNormalAngleChange;
 
         if ((wallFront && newWall) || pm.grounded)
         {
@@ -94,6 +127,7 @@ public class Climbing : MonoBehaviour
             climbJumpsLeft = climbJumps;
         }
     }
+
     private void StartClimbing()
     {
         climbing = true;
@@ -104,12 +138,14 @@ public class Climbing : MonoBehaviour
 
         /// idea - camera fov change
     }
+
     private void ClimbingMovement()
     {
         rb.velocity = new Vector3(rb.velocity.x, climbSpeed, rb.velocity.z);
 
         /// idea - sound effect
     }
+
     private void StopClimbing()
     {
         climbing = false;
@@ -118,12 +154,18 @@ public class Climbing : MonoBehaviour
         /// idea - particle effect
         /// idea - sound effect
     }
+
     private void ClimbJump()
     {
+        if (pm.grounded)
+            return;
+        if (lg.holding || lg.exitingLedge)
+            return;
         exitingWall = true;
         exitWallTimer = exitWallTime;
 
-        Vector3 forceToApply = transform.up * climbJumpUpForce + frontWallHit.normal * climbJumpBackForce;
+        Vector3 forceToApply =
+            transform.up * climbJumpUpForce + frontWallHit.normal * climbJumpBackForce;
 
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
         rb.AddForce(forceToApply, ForceMode.Impulse);

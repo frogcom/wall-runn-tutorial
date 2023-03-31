@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class WallRunning : MonoBehaviour
 {
-    [Header("WallRunning")]
+    [Header("Wallrunning")]
     public LayerMask whatIsWall;
     public LayerMask whatIsGround;
     public float wallRunForce;
@@ -44,22 +44,23 @@ public class WallRunning : MonoBehaviour
     public Transform orientation;
     public PlayerCam cam;
     private PlayerMovementAdvanced pm;
+    private LedgeGrabbing lg;
     private Rigidbody rb;
-
-
-
 
     // Start is called before the first frame update
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         pm = GetComponent<PlayerMovementAdvanced>();
+        lg = GetComponent<LedgeGrabbing>();
     }
+
     private void Update()
     {
         CheckForWall();
         StateMachine();
     }
+
     private void FixedUpdate()
     {
         if (pm.wallrunning)
@@ -68,14 +69,27 @@ public class WallRunning : MonoBehaviour
 
     private void CheckForWall()
     {
-        wallRight = Physics.Raycast(transform.position, orientation.right, out rightWallhit, wallCheckDistance, whatIsWall);
-        wallLeft = Physics.Raycast(transform.position, -orientation.right, out leftWallhit, wallCheckDistance, whatIsWall);
+        wallRight = Physics.Raycast(
+            transform.position,
+            orientation.right,
+            out rightWallhit,
+            wallCheckDistance,
+            whatIsWall
+        );
+        wallLeft = Physics.Raycast(
+            transform.position,
+            -orientation.right,
+            out leftWallhit,
+            wallCheckDistance,
+            whatIsWall
+        );
     }
 
     private bool AboveGround()
     {
         return !Physics.Raycast(transform.position, Vector3.down, minJumpHeight, whatIsGround);
     }
+
     private void StateMachine()
     {
         // Getting Inputs
@@ -102,9 +116,10 @@ public class WallRunning : MonoBehaviour
             }
 
             // wall jump
-            if (Input.GetKeyDown(jumpKey)) WallJump();
+            if (Input.GetKeyDown(jumpKey))
+                WallJump();
         }
-        // state 2 - exiting 
+        // state 2 - exiting
         else if (exitingWall)
         {
             if (pm.wallrunning)
@@ -116,7 +131,6 @@ public class WallRunning : MonoBehaviour
             if (exitWallTimer <= 0)
                 exitingWall = false;
         }
-
         // state 3 - none
         else
         {
@@ -124,6 +138,7 @@ public class WallRunning : MonoBehaviour
                 StopWallRun();
         }
     }
+
     private void StartWallRun()
     {
         pm.wallrunning = true;
@@ -134,9 +149,12 @@ public class WallRunning : MonoBehaviour
 
         // apply camera effects
         cam.DoFov(90f);
-        if (wallLeft) cam.DoTilt(-5f);
-        if (wallRight) cam.DoTilt(5f);
+        if (wallLeft)
+            cam.DoTilt(-5f);
+        if (wallRight)
+            cam.DoTilt(5f);
     }
+
     private void WallRunningMovement()
     {
         rb.useGravity = useGravity;
@@ -145,7 +163,10 @@ public class WallRunning : MonoBehaviour
 
         Vector3 wallForward = Vector3.Cross(wallNormal, transform.up);
 
-        if ((orientation.forward - wallForward).magnitude > (orientation.forward - -wallForward).magnitude)
+        if (
+            (orientation.forward - wallForward).magnitude
+            > (orientation.forward - -wallForward).magnitude
+        )
             wallForward = -wallForward;
 
         // forward force
@@ -165,6 +186,7 @@ public class WallRunning : MonoBehaviour
         if (useGravity)
             rb.AddForce(transform.up * gravityCounterForce, ForceMode.Force);
     }
+
     private void StopWallRun()
     {
         pm.wallrunning = false;
@@ -173,8 +195,12 @@ public class WallRunning : MonoBehaviour
         cam.DoFov(80f);
         cam.DoTilt(0f);
     }
+
     private void WallJump()
     {
+        if (lg.holding || lg.exitingLedge)
+            return;
+
         // enter exiting wall state
         exitingWall = true;
         exitWallTimer = exitWallTime;
@@ -186,6 +212,5 @@ public class WallRunning : MonoBehaviour
         // reset y velocity and add force
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
         rb.AddForce(forceToApply, ForceMode.Impulse);
-
     }
 }
