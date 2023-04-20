@@ -146,7 +146,7 @@ public class LedgeGrabbing : MonoBehaviour
         {
             if (!pm.freeze)
                 pm.freeze = true;
-            if (pm.unlimited)
+            if (!pm.unlimited)
                 pm.unlimited = false;
         }
 

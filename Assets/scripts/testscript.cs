@@ -3,22 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class PlayerMovementAdvanced : MonoBehaviour
+public class PlayerMovementGrappling : MonoBehaviour
 {
     [Header("Movement")]
     private float moveSpeed;
-    private float desiredMoveSpeed;
-    private float lastDesiredMoveSpeed;
     public float walkSpeed;
     public float sprintSpeed;
-    public float slideSpeed;
-    public float wallrunSpeed;
-    public float climbSpeed;
-    public float vaultSpeed;
-    public float airMinSpeed;
-
-    public float speedIncreaseMultiplier;
-    public float slopeIncreaseMultiplier;
+    public float swingSpeed;
 
     public float groundDrag;
 
@@ -41,22 +32,17 @@ public class PlayerMovementAdvanced : MonoBehaviour
     [Header("Ground Check")]
     public float playerHeight;
     public LayerMask whatIsGround;
-    public bool grounded;
+    bool grounded;
 
     [Header("Slope Handling")]
     public float maxSlopeAngle;
     private RaycastHit slopeHit;
     private bool exitingSlope;
 
-    [Header("References")]
-    public Climbing climbingScript;
-
     [Header("Camera Effects")]
     public PlayerCam cam;
     public float grappleFov = 95f;
 
-
-    public Transform playerCam;
     public Transform orientation;
 
     float horizontalInput;
@@ -67,34 +53,21 @@ public class PlayerMovementAdvanced : MonoBehaviour
     Rigidbody rb;
 
     public MovementState state;
-
     public enum MovementState
     {
         freeze,
         grappling,
-        unlimited,
+        swinging,
         walking,
         sprinting,
-        wallrunning,
-        climbing,
-        vaulting,
         crouching,
-        sliding,
         air
     }
 
-    public bool sliding;
-    public bool crouching;
-    public bool wallrunning;
-    public bool climbing;
-    public bool vaulting;
-
     public bool freeze;
-    public bool unlimited;
 
     public bool activeGrapple;
-
-    public bool restricted;
+    public bool swinging;
 
     private void Start()
     {
@@ -109,12 +82,7 @@ public class PlayerMovementAdvanced : MonoBehaviour
     private void Update()
     {
         // ground check
-        grounded = Physics.Raycast(
-            transform.position,
-            Vector3.down,
-            playerHeight * 0.5f + 0.2f,
-            whatIsGround
-        );
+        grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
 
         MyInput();
         SpeedControl();
@@ -125,6 +93,8 @@ public class PlayerMovementAdvanced : MonoBehaviour
             rb.drag = groundDrag;
         else
             rb.drag = 0;
+
+        TextStuff();
     }
 
     private void FixedUpdate()
@@ -150,202 +120,73 @@ public class PlayerMovementAdvanced : MonoBehaviour
         // start crouch
         if (Input.GetKeyDown(crouchKey))
         {
-            transform.localScale = new Vector3(
-                transform.localScale.x,
-                crouchYScale,
-                transform.localScale.z
-            );
+            transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
             rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
         }
 
         // stop crouch
         if (Input.GetKeyUp(crouchKey))
         {
-            transform.localScale = new Vector3(
-                transform.localScale.x,
-                startYScale,
-                transform.localScale.z
-            );
+            transform.localScale = new Vector3(transform.localScale.x, startYScale, transform.localScale.z);
         }
     }
 
-    bool keepMomentum;
-
     private void StateHandler()
     {
-        switch (state)
-        {
-            case freeze.true:
-                state = MovementState.freeze;
-                moveSpeed = 0;
-                rb.velocity = Vector3.zero;
-                break;
-            case activeGrapple:
-                state = MovementState.grappling;
-                moveSpeed = sprintSpeed;
-                break;
-            case unlimited:
-                state = MovementState.unlimited;
-                moveSpeed = 999f;
-                break;
-            case climbing:
-                state = MovementState.climbing;
-                desiredMoveSpeed = climbSpeed;
-                break;
-            case wallrunning:
-                state = MovementState.wallrunning;
-                desiredMoveSpeed = wallrunSpeed;
-                break;
-            case sliding:
-                state = MovementState.sliding;
-
-                if (OnSlope() && rb.velocity.y < 0.1f)
-                {
-                    desiredMoveSpeed = slideSpeed;
-                    keepMomentum = true;
-                }
-                else
-                    desiredMoveSpeed = sprintSpeed;
-                break;
-            case Input.GetKey(crouchKey):
-                state = MovementState.crouching;
-                desiredMoveSpeed = crouchSpeed;
-                break;
-            case grounded && Input.GetKey(sprintKey):
-                state = MovementState.sprinting;
-                desiredMoveSpeed = sprintSpeed;
-                break;
-            case grounded:
-                state = MovementState.walking;
-                desiredMoveSpeed = walkSpeed;
-                break;
-            default:
-                state = MovementState.air;
-                break;
-        }
-        //mode - climbing
-/*
+        // Mode - Freeze
         if (freeze)
         {
             state = MovementState.freeze;
             moveSpeed = 0;
             rb.velocity = Vector3.zero;
         }
+
+        // Mode - Grappling
         else if (activeGrapple)
         {
             state = MovementState.grappling;
             moveSpeed = sprintSpeed;
         }
-        *//*else if (unlimited)
-        {
-            state = MovementState.unlimited;
-            moveSpeed = 999f;
-            return;
-        }*//*
-        else if (climbing)
-        {
-            state = MovementState.climbing;
-            desiredMoveSpeed = climbSpeed;
-        }
-        // mode - Wallrunning
-        else if (wallrunning)
-        {
-            state = MovementState.wallrunning;
-            desiredMoveSpeed = wallrunSpeed;
-        }
-        // Mode - Sliding
-        else if (sliding)
-        {
-            state = MovementState.sliding;
 
-            if (OnSlope() && rb.velocity.y < 0.1f)
-            {
-                desiredMoveSpeed = slideSpeed;
-                keepMomentum = true;
-            }
-            else
-                desiredMoveSpeed = sprintSpeed;
+        // Mode - Swinging
+        else if (swinging)
+        {
+            state = MovementState.swinging;
+            moveSpeed = swingSpeed;
         }
+
         // Mode - Crouching
         else if (Input.GetKey(crouchKey))
         {
             state = MovementState.crouching;
-            desiredMoveSpeed = crouchSpeed;
+            moveSpeed = crouchSpeed;
         }
+
         // Mode - Sprinting
         else if (grounded && Input.GetKey(sprintKey))
         {
             state = MovementState.sprinting;
-            desiredMoveSpeed = sprintSpeed;
+            moveSpeed = sprintSpeed;
         }
+
         // Mode - Walking
         else if (grounded)
         {
             state = MovementState.walking;
-            desiredMoveSpeed = walkSpeed;
+            moveSpeed = walkSpeed;
         }
+
         // Mode - Air
         else
         {
             state = MovementState.air;
-        }*/
-        bool desiredMoveSpeedHasChanged = desiredMoveSpeed != lastDesiredMoveSpeed;
-        if (desiredMoveSpeedHasChanged)
-        {
-            if (keepMomentum)
-            {
-                StopAllCoroutines();
-                StartCoroutine(SmoothlyLerpMoveSpeed());
-            }
-            else
-            {
-                moveSpeed = desiredMoveSpeed;
-            }
         }
-
-        lastDesiredMoveSpeed = desiredMoveSpeed;
-
-        // deactivate keepMomentum
-        if (Mathf.Abs(desiredMoveSpeed - moveSpeed) < 0.1f)
-            keepMomentum = false;
     }
 
-    private IEnumerator SmoothlyLerpMoveSpeed()
-    {
-        // smoothly lerp movementSpeed to desired value
-        float time = 0;
-        float difference = Mathf.Abs(desiredMoveSpeed - moveSpeed);
-        float startValue = moveSpeed;
-
-        while (time < difference)
-        {
-            moveSpeed = Mathf.Lerp(startValue, desiredMoveSpeed, time / difference);
-
-            if (OnSlope())
-            {
-                float slopeAngle = Vector3.Angle(Vector3.up, slopeHit.normal);
-                float slopeAngleIncrease = 1 + (slopeAngle / 90f);
-
-                time +=
-                    Time.deltaTime
-                    * speedIncreaseMultiplier
-                    * slopeIncreaseMultiplier
-                    * slopeAngleIncrease;
-            }
-            else
-                time += Time.deltaTime * speedIncreaseMultiplier;
-
-            yield return null;
-        }
-
-        moveSpeed = desiredMoveSpeed;
-    }
-
-    public void MovePlayer()
+    private void MovePlayer()
     {
         if (activeGrapple) return;
-        if (climbingScript.exitingWall) return;
-        if (restricted) return;
+        if (swinging) return;
 
         // calculate movement direction
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
@@ -353,23 +194,22 @@ public class PlayerMovementAdvanced : MonoBehaviour
         // on slope
         if (OnSlope() && !exitingSlope)
         {
-            rb.AddForce(
-                moveDirection.normalized * moveSpeed * 10f * airMultiplier,
-                ForceMode.Force
-            );
+            rb.AddForce(GetSlopeMoveDirection() * moveSpeed * 20f, ForceMode.Force);
+
             if (rb.velocity.y > 0)
                 rb.AddForce(Vector3.down * 80f, ForceMode.Force);
         }
+
         // on ground
         else if (grounded)
             rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
+
         // in air
         else if (!grounded)
             rb.AddForce(moveDirection.normalized * moveSpeed * 10f * airMultiplier, ForceMode.Force);
 
         // turn gravity off while on slope
-        if (!wallrunning)
-            rb.useGravity = !OnSlope();
+        rb.useGravity = !OnSlope();
     }
 
     private void SpeedControl()
@@ -430,13 +270,13 @@ public class PlayerMovementAdvanced : MonoBehaviour
         enableMovementOnNextTouch = true;
         rb.velocity = velocityToSet;
 
-        // cam.DoFov(grappleFov);
+        cam.DoFov(grappleFov);
     }
 
     public void ResetRestrictions()
     {
-        //activeGrapple = false;
-        //cam.DoFov(85f);
+        activeGrapple = false;
+        cam.DoFov(85f);
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -450,7 +290,7 @@ public class PlayerMovementAdvanced : MonoBehaviour
         }
     }
 
-    public bool OnSlope()
+    private bool OnSlope()
     {
         if (Physics.Raycast(transform.position, Vector3.down, out slopeHit, playerHeight * 0.5f + 0.3f))
         {
@@ -461,7 +301,7 @@ public class PlayerMovementAdvanced : MonoBehaviour
         return false;
     }
 
-    public Vector3 GetSlopeMoveDirection()
+    private Vector3 GetSlopeMoveDirection()
     {
         return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
     }
@@ -478,4 +318,29 @@ public class PlayerMovementAdvanced : MonoBehaviour
 
         return velocityXZ + velocityY;
     }
+
+    #region Text & Debugging
+
+    public TextMeshProUGUI text_speed;
+    public TextMeshProUGUI text_mode;
+    private void TextStuff()
+    {
+        Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        if (OnSlope())
+            text_speed.SetText("Speed: " + Round(rb.velocity.magnitude, 1) + " / " + Round(moveSpeed, 1));
+
+        else
+            text_speed.SetText("Speed: " + Round(flatVel.magnitude, 1) + " / " + Round(moveSpeed, 1));
+
+        text_mode.SetText(state.ToString());
+    }
+
+    public static float Round(float value, int digits)
+    {
+        float mult = Mathf.Pow(10.0f, (float)digits);
+        return Mathf.Round(value * mult) / mult;
+    }
+
+    #endregion
 }
