@@ -173,58 +173,9 @@ public class PlayerMovementAdvanced : MonoBehaviour
 
     private void StateHandler()
     {
-        switch (state)
-        {
-            case freeze.true:
-                state = MovementState.freeze;
-                moveSpeed = 0;
-                rb.velocity = Vector3.zero;
-                break;
-            case activeGrapple:
-                state = MovementState.grappling;
-                moveSpeed = sprintSpeed;
-                break;
-            case unlimited:
-                state = MovementState.unlimited;
-                moveSpeed = 999f;
-                break;
-            case climbing:
-                state = MovementState.climbing;
-                desiredMoveSpeed = climbSpeed;
-                break;
-            case wallrunning:
-                state = MovementState.wallrunning;
-                desiredMoveSpeed = wallrunSpeed;
-                break;
-            case sliding:
-                state = MovementState.sliding;
-
-                if (OnSlope() && rb.velocity.y < 0.1f)
-                {
-                    desiredMoveSpeed = slideSpeed;
-                    keepMomentum = true;
-                }
-                else
-                    desiredMoveSpeed = sprintSpeed;
-                break;
-            case Input.GetKey(crouchKey):
-                state = MovementState.crouching;
-                desiredMoveSpeed = crouchSpeed;
-                break;
-            case grounded && Input.GetKey(sprintKey):
-                state = MovementState.sprinting;
-                desiredMoveSpeed = sprintSpeed;
-                break;
-            case grounded:
-                state = MovementState.walking;
-                desiredMoveSpeed = walkSpeed;
-                break;
-            default:
-                state = MovementState.air;
-                break;
-        }
+                
         //mode - climbing
-/*
+
         if (freeze)
         {
             state = MovementState.freeze;
@@ -236,12 +187,12 @@ public class PlayerMovementAdvanced : MonoBehaviour
             state = MovementState.grappling;
             moveSpeed = sprintSpeed;
         }
-        *//*else if (unlimited)
+        else if (unlimited)
         {
             state = MovementState.unlimited;
             moveSpeed = 999f;
             return;
-        }*//*
+        }
         else if (climbing)
         {
             state = MovementState.climbing;
@@ -288,7 +239,7 @@ public class PlayerMovementAdvanced : MonoBehaviour
         else
         {
             state = MovementState.air;
-        }*/
+        }
         bool desiredMoveSpeedHasChanged = desiredMoveSpeed != lastDesiredMoveSpeed;
         if (desiredMoveSpeedHasChanged)
         {

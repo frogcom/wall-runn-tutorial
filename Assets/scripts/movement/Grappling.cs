@@ -34,7 +34,11 @@ public class Grappling : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(grappleKey)) StartGrapple();
+        if (Input.GetKeyDown(grappleKey))
+        {
+
+            StartGrapple();
+        }
 
         if (grapplingCdTimer > 0)
             grapplingCdTimer -= Time.deltaTime;
@@ -88,19 +92,20 @@ public class Grappling : MonoBehaviour
 
             pm.JumpToPosition(grapplePoint, highestPointOnArc);
         }
-
+        Debug.Log("test");
         Invoke(nameof(StopGrapple), 1f);
     }
 
     public void StopGrapple()
     {
+        Debug.Log("testten");
         pm.freeze = false;
 
         grappling = false;
 
         grapplingCdTimer = grapplingCd;
 
-        //lr.enabled = false;
+        lr.enabled = false;
     }
 
     public bool IsGrappling()
