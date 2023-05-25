@@ -46,8 +46,8 @@ public class Grappling : MonoBehaviour
 
     private void LateUpdate()
     {
-        // if (grappling)
-        //    lr.SetPosition(0, gunTip.position);
+        if (grappling)
+        lr.SetPosition(0, gunTip.position);
     }
 
     private void StartGrapple()
@@ -55,7 +55,7 @@ public class Grappling : MonoBehaviour
         if (grapplingCdTimer > 0) return;
 
         grappling = true;
-
+ 
         pm.freeze = true;
 
         RaycastHit hit;
@@ -92,17 +92,19 @@ public class Grappling : MonoBehaviour
 
             pm.JumpToPosition(grapplePoint, highestPointOnArc);
         }
-        Debug.Log("test");
+
         Invoke(nameof(StopGrapple), 1f);
+        Debug.Log("Printing grappling value in ExecuteGrapple:");
+        Debug.Log(grappling);
     }
 
     public void StopGrapple()
     {
-        Debug.Log("testten");
         pm.freeze = false;
 
         grappling = false;
 
+        Debug.Log(grappling);
         grapplingCdTimer = grapplingCd;
 
         lr.enabled = false;
