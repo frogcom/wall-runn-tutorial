@@ -31,7 +31,7 @@ public class Grappling : MonoBehaviour
     {
         pm = GetComponent<PlayerMovementAdvanced>();
     }
-
+    
     private void Update()
     {
         if (Input.GetKeyDown(grappleKey))
